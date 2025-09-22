@@ -34,6 +34,9 @@ string BTN_NAV_LEFT  = "<<";
 string BTN_NAV_GAP   = " ";
 string BTN_NAV_RIGHT = ">>";
 
+/* Contexts requiring the wearer to be unowned */
+list WEARER_OWNERLOCK_CONTEXTS = ["core_owner", "core_trustees"];
+
 /* ---------- State ---------- */
 /* Flattened registry: [label,context,min_acl,has_tpe,label_tpe,tpe_min_acl,audience,...] */
 list    g_all = [];
@@ -175,6 +178,11 @@ list filterForViewer(){
                     }
                 } else {
                     /* Wearer, not TPE */
+                    if (gOwnerSet){
+                        if (llListFindList(WEARER_OWNERLOCK_CONTEXTS, [context]) != -1){
+                            include = FALSE;
+                        }
+                    }
                     if (pol_owned_only){
                         if (minAcl <= 2){
                             /* ok */

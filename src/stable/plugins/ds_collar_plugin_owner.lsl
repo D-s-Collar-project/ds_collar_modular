@@ -52,12 +52,6 @@ string KEY_TRUSTEE_HONS            = "trustee_honorifics";
 string KEY_PUBLIC_MODE             = "public_mode";
 string KEY_LOCKED_FLAG             = "locked";
 
-/* ---------- Identity ---------- */
-string  PLUGIN_CONTEXT   = "core_owner";
-string  ROOT_CONTEXT     = "core_root";
-string  PLUGIN_LABEL     = "Owner";
-integer PLUGIN_SN        = 0;
-
 /* ---------- ACL levels ---------- */
 integer ACL_BLACKLIST        = -1;
 integer ACL_NOACCESS         = 0;
@@ -66,6 +60,14 @@ integer ACL_OWNED            = 2;   // wearer while owned
 integer ACL_TRUSTEE          = 3;
 integer ACL_UNOWNED          = 4;   // wearer while unowned
 integer ACL_PRIMARY_OWNER    = 5;
+
+/* ---------- Identity ---------- */
+string  PLUGIN_CONTEXT   = "core_owner";
+string  ROOT_CONTEXT     = "core_root";
+string  PLUGIN_LABEL     = "Owner";
+integer PLUGIN_SN        = 0;
+integer PLUGIN_MIN_ACL   = ACL_OWNED;  // wearer while owned (min menu access level)
+//PATCH: Register at ACL 2 so the Owner plugin shows for wearer/owners in the root menu.
 
 /* Who can OPEN the plugin menu */
 list ALLOWED_ACL_LEVELS = [ACL_OWNED, ACL_UNOWNED, ACL_PRIMARY_OWNER];
@@ -150,8 +152,9 @@ integer register_plugin() {
     j = llJsonSetValue(j, ["type"],     CONS_TYPE_REGISTER);
     j = llJsonSetValue(j, ["sn"],       (string)PLUGIN_SN);
     j = llJsonSetValue(j, ["label"],    PLUGIN_LABEL);
-    j = llJsonSetValue(j, ["min_acl"],  "0");                // matches your current file
+    j = llJsonSetValue(j, ["min_acl"],  (string)PLUGIN_MIN_ACL);
     j = llJsonSetValue(j, ["context"],  PLUGIN_CONTEXT);
+    j = llJsonSetValue(j, ["script"],   llGetScriptName());
     llMessageLinked(LINK_SET, K_PLUGIN_REG_REPLY, j, NULL_KEY);
     logd("Registered.");
     return 0;

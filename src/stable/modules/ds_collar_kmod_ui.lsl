@@ -28,6 +28,8 @@ integer K_PLUGIN_RETURN_NUM   = 901;
 
 /* ---------- UI ---------- */
 string ROOT_CONTEXT      = "core_root";
+string CONTEXT_TRUSTEES  = "core_trustees"; //PATCH ensure owned wearers cannot reach trustee UI
+string CONTEXT_PUBLIC    = "core_public";   //PATCH owned wearers shouldn't see public access UI
 integer MAX_FUNC_BTNS    = 9;
 float   TOUCH_RANGE_M    = 5.0;
 
@@ -141,6 +143,8 @@ list filterForViewer(){
 
         integer include = TRUE;
         integer isCoreOwner = (context == "core_owner");
+        integer isTrustees = (context == CONTEXT_TRUSTEES);
+        integer isPublic   = (context == CONTEXT_PUBLIC);
 
         /* audience gate */
         if (IsWearer){
@@ -195,6 +199,12 @@ list filterForViewer(){
                     }
                 } else {
                     /* Wearer, not TPE */
+                    if (!PolTrusteeAccess && isTrustees){
+                        include = FALSE; /* owned wearers cannot manage trustees */
+                    }
+                    if (OwnerSet && isPublic){
+                        include = FALSE; /* owned wearers never manage public access */
+                    }
                     if (PolOwnedOnly){
                         if (minAcl <= 2){
                             /* ok */

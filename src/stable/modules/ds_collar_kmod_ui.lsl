@@ -38,7 +38,12 @@ string BTN_NAV_GAP   = " ";
 string BTN_NAV_RIGHT = ">>";
 
 /* ACL tiers (mirrors AUTH module) */
-integer ACL_UNOWNED = 4;
+integer ACL_NOACCESS      = 0;
+integer ACL_PUBLIC        = 1;
+integer ACL_OWNED         = 2;
+integer ACL_TRUSTEE       = 3;
+integer ACL_UNOWNED       = 4;
+integer ACL_PRIMARY_OWNER = 5;
 
 /* ---------- State ---------- */
 /* Flattened registry: [label,context,min_acl,has_tpe,label_tpe,tpe_min_acl,audience,...] */
@@ -132,6 +137,16 @@ list filterForViewer(){
     integer i = 0;
     integer n = llGetListLength(All);
 
+    /* Normalize the effective ACL the filter should use for this viewer. */
+    integer viewerAcl = Acl;
+    if (IsWearer && Acl >= 0){
+        if (OwnerSet){
+            if (Acl < ACL_PRIMARY_OWNER) viewerAcl = ACL_OWNED; /* owned wearers never exceed owner tier */
+        } else {
+            if (Acl < ACL_UNOWNED) viewerAcl = ACL_UNOWNED;      /* treat stray wearer as unowned */
+        }
+    }
+
     while (i + 6 < n){
         string  label    = llList2String (All, i);
         string  context  = llList2String (All, i + 1);
@@ -154,7 +169,7 @@ list filterForViewer(){
         }
 
         /* ACL -1 is handled by caller; still guard */
-        if (Acl < 0) include = FALSE;
+        if (viewerAcl < 0) include = FALSE;
 
         if (isCoreOwner){
             if (IsWearer){
@@ -199,27 +214,29 @@ list filterForViewer(){
                     }
                 } else {
                     /* Wearer, not TPE */
-                    if (!PolTrusteeAccess && isTrustees){
-                        include = FALSE; /* owned wearers cannot manage trustees */
-                    }
-                    if (OwnerSet && isPublic){
-                        include = FALSE; /* owned wearers never manage public access */
+                    if (OwnerSet){
+                        if (isTrustees) include = FALSE; /* owned wearers cannot manage trustees */
+                        if (isPublic)   include = FALSE; /* owned wearers never manage public access */
+                    } else {
+                        if (!PolTrusteeAccess && isTrustees){
+                            include = FALSE; /* only unowned wearers may reach trustees */
+                        }
                     }
                     if (PolOwnedOnly){
-                        if (minAcl <= 2){
+                        if (minAcl <= ACL_OWNED){
                             /* ok */
                         } else {
                             include = FALSE;
                         }
                     } else if (PolWearerUnowned){
-                        if (minAcl <= 4){
+                        if (minAcl <= ACL_UNOWNED){
                             /* ok */
                         } else {
                             include = FALSE;
                         }
                     } else {
                         /* safety fallback for wearer when no policy flags set */
-                        if (minAcl <= Acl){
+                        if (minAcl <= viewerAcl){
                             /* ok */
                         } else {
                             include = FALSE;

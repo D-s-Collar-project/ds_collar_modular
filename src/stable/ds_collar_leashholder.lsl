@@ -5,14 +5,24 @@ integer CHAN  = -192837465;  // must match collar
 // Emits leash holder debug chatter when enabled.
 integer logd(string s){ if (DEBUG) llOwnerSay("[HOLDER] " + s); return TRUE; }
 
-// Returns the link key of the leash target prim, falling back to this prim.
+// Returns the link key of the leash target prim named "Leash Holder Origin Prim".
 key leashPrimKey(){
     integer n = llGetNumberOfPrims();
-    integer i = 2;
+    integer i = 1;
+    integer name_match = 0;
+    integer desc_match = 0;
+    string target = "leash holder origin prim";
     while (i <= n){
-        if (llGetLinkName(i) == "LeashPoint") return llGetLinkKey(i);
+        list params = llGetLinkPrimitiveParams(i,[PRIM_NAME, PRIM_DESC]);
+        string nm = llToLower(llStringTrim(llList2String(params,0), STRING_TRIM));
+        string desc = llToLower(llStringTrim(llList2String(params,1), STRING_TRIM));
+        if (nm == target && desc == target) return llGetLinkKey(i);
+        if (nm == target && name_match == 0) name_match = i;
+        if (desc == target && desc_match == 0) desc_match = i;
         i = i + 1;
     }
+    if (name_match != 0) return llGetLinkKey(name_match);
+    if (desc_match != 0) return llGetLinkKey(desc_match);
     return llGetLinkKey(llGetLinkNumber()); /* this prim (child or root) */
 }
 

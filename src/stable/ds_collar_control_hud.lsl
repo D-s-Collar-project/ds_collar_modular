@@ -29,6 +29,7 @@ integer PUBLIC_DISCOVERY_CHAN = -8675309;
 integer PUBLIC_DISCOVERY_REPLY_CHAN = -8675310;
 
 // Phase 2: Session channels (derived from HUD wearer + collar owner after selection)
+integer SESSION_BASE_CHAN = -8675320;  // Base channel for session derivation
 integer SESSION_QUERY_CHAN;
 integer SESSION_REPLY_CHAN;
 integer SESSION_MENU_CHAN;
@@ -225,7 +226,7 @@ showCollarSelectionDialog() {
 
 establishSession(key collar_owner) {
     // Phase 2: Derive secure session channels from both HUD wearer + collar owner
-    SESSION_QUERY_CHAN = deriveSessionChannel(-8675320, HudWearer, collar_owner);
+    SESSION_QUERY_CHAN = deriveSessionChannel(SESSION_BASE_CHAN, HudWearer, collar_owner);
     SESSION_REPLY_CHAN = SESSION_QUERY_CHAN - 1;
     SESSION_MENU_CHAN = SESSION_QUERY_CHAN - 2;
 

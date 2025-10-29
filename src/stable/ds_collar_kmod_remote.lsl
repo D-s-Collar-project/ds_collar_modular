@@ -51,6 +51,8 @@ integer PUBLIC_DISCOVERY_CHAN = -8675309;
 integer PUBLIC_DISCOVERY_REPLY_CHAN = -8675310;
 
 // Phase 2: Session channels (derived from HUD wearer + collar owner, negotiated per-session)
+// Base channel for deriving session-specific channels (MUST match HUD implementation)
+integer SESSION_BASE_CHAN = -8675320;
 integer SESSION_QUERY_CHAN = 0;
 integer SESSION_REPLY_CHAN = 0;
 integer SESSION_MENU_CHAN = 0;
@@ -319,7 +321,7 @@ handleSessionEstablish(string message) {
     logd("Establishing session with HUD wearer: " + llKey2Name(hud_wearer));
 
     // Derive session channels (must match HUD's calculation exactly)
-    SESSION_QUERY_CHAN = deriveSessionChannel(-8675320, hud_wearer, CollarOwner);
+    SESSION_QUERY_CHAN = deriveSessionChannel(SESSION_BASE_CHAN, hud_wearer, CollarOwner);
     SESSION_REPLY_CHAN = SESSION_QUERY_CHAN - 1;
     SESSION_MENU_CHAN = SESSION_QUERY_CHAN - 2;
 

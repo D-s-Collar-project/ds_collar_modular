@@ -636,10 +636,8 @@ handle_start(string msg, key user_key) {
         return;
     }
 
-    if (context == SOS_CONTEXT) {
-        start_sos_session(user_key);
-        return;
-    }
+    // Don't intercept plugin "start" messages (including SOS_CONTEXT)
+    // Only handle ROOT_CONTEXT for the main UI menu
 }
 
 start_root_session(key user_key) {

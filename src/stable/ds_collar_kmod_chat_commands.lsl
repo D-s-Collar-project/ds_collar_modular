@@ -12,7 +12,7 @@
    - 500 (KERNEL_LIFECYCLE): Registration and lifecycle
    - 700 (AUTH_BUS): ACL queries for command speakers
    - 800 (SETTINGS_BUS): Settings sync/delta consumption
-   - 1000 (COMMANDS_BUS): Command registration and routing
+   - 900 (UI_BUS): Command registration and routing
 
    COMMAND FORMAT:
    - <prefix> <command> [args]
@@ -49,7 +49,7 @@ integer PRODUCTION = TRUE;  // Set FALSE for development builds
 integer KERNEL_LIFECYCLE = 500;
 integer AUTH_BUS = 700;
 integer SETTINGS_BUS = 800;
-integer COMMANDS_BUS = 1000;  // NEW: Command registration and routing
+integer UI_BUS = 900;  // Used for command registration and routing
 
 /* ═══════════════════════════════════════════════════════════
    SETTINGS KEYS
@@ -298,7 +298,7 @@ send_error_to_plugin(string plugin_context, string error_msg) {
         "type", "cmd_error",
         "error", error_msg
     ]);
-    llMessageLinked(LINK_SET, COMMANDS_BUS, msg, NULL_KEY);
+    llMessageLinked(LINK_SET, UI_BUS, msg, NULL_KEY);
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
@@ -420,7 +420,7 @@ route_command(string plugin, string cmd, string args, key speaker, integer acl, 
         "speaker_acl", acl,
         "channel", channel
     ]);
-    llMessageLinked(LINK_SET, COMMANDS_BUS, msg, speaker);
+    llMessageLinked(LINK_SET, UI_BUS, msg, speaker);
     logd("Routed command '" + cmd + "' to " + plugin + " (ACL " + (string)acl + ")");
 }
 
@@ -607,10 +607,10 @@ send_pong() {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
-   COMMANDS BUS HANDLING
+   COMMAND MESSAGES (via UI_BUS)
    ══════════════════════════════════════════════════════════════════════════════ */
 
-handle_commands_bus(string payload, key id) {
+handle_command_messages(string payload, key id) {
     if (!json_has(payload, ["type"])) return;
 
     string msg_type = llJsonGetValue(payload, ["type"]);
@@ -720,8 +720,8 @@ default {
                 }
             }
         }
-        else if (num == COMMANDS_BUS) {
-            handle_commands_bus(msg, id);
+        else if (num == UI_BUS) {
+            handle_command_messages(msg, id);
         }
     }
 

@@ -51,13 +51,15 @@ cmd lock on
 
 ## Integration Steps
 
-### Step 1: Add COMMANDS_BUS Constant
+### Step 1: Add UI_BUS Constant
 
-Add to your plugin's ABI section:
+Add to your plugin's ABI section (if not already present):
 
 ```lsl
-integer COMMANDS_BUS = 1000;
+integer UI_BUS = 900;
 ```
+
+**Note:** UI_BUS is already part of the standard ABI, so most plugins will already have this constant defined.
 
 ### Step 2: Define Your Commands
 
@@ -109,7 +111,7 @@ register_commands() {
         "context", PLUGIN_CONTEXT,
         "commands", llList2Json(JSON_ARRAY, REGISTERED_COMMANDS)
     ]);
-    llMessageLinked(LINK_SET, COMMANDS_BUS, msg, NULL_KEY);
+    llMessageLinked(LINK_SET, UI_BUS, msg, NULL_KEY);
 
     logd("Registered commands: " + llDumpList2String(REGISTERED_COMMANDS, ", "));
 }
@@ -123,8 +125,8 @@ Add to your `link_message` event:
 link_message(integer sender, integer num, string msg, key id) {
     // ... existing handlers ...
 
-    // ===== COMMAND EXECUTION =====
-    if (num == COMMANDS_BUS) {
+    // ===== COMMAND EXECUTION (via UI_BUS) =====
+    if (num == UI_BUS) {
         if (!json_has(msg, ["type"])) return;
         string msg_type = llJsonGetValue(msg, ["type"]);
 
@@ -241,7 +243,7 @@ unregister_commands() {
         "type", "cmd_unregister",
         "context", PLUGIN_CONTEXT
     ]);
-    llMessageLinked(LINK_SET, COMMANDS_BUS, msg, NULL_KEY);
+    llMessageLinked(LINK_SET, UI_BUS, msg, NULL_KEY);
 }
 
 // In soft_reset handler:
@@ -581,11 +583,11 @@ Collar: Available commands (prefix: ab):
 
 If you have an existing plugin and want to add chat commands:
 
-1. Add `integer COMMANDS_BUS = 1000;`
+1. Ensure `integer UI_BUS = 900;` is defined (usually already present)
 2. Define `list REGISTERED_COMMANDS = [...];`
 3. Add `register_commands()` function
 4. Call registration in timer (1 second delay)
-5. Add COMMANDS_BUS handler to link_message
+5. Add command message handlers to UI_BUS section of link_message
 6. Implement command handlers that call your existing functions
 
 **Example:**

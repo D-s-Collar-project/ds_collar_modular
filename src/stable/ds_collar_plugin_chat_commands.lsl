@@ -29,7 +29,6 @@ integer AUTH_BUS = 700;
 integer SETTINGS_BUS = 800;
 integer UI_BUS = 900;
 integer DIALOG_BUS = 950;
-integer COMMANDS_BUS = 1000;
 
 /* ═══════════════════════════════════════════════════════════
    PLUGIN IDENTITY
@@ -294,7 +293,7 @@ handle_prefix_input(string text) {
         "type", "cmd_set_prefix",
         "prefix", text
     ]);
-    llMessageLinked(LINK_SET, COMMANDS_BUS, msg, NULL_KEY);
+    llMessageLinked(LINK_SET, UI_BUS, msg, NULL_KEY);
 
     llRegionSayTo(CurrentUser, 0, "Prefix changed to: " + text);
     CommandPrefix = text;  // Update local cache

@@ -33,7 +33,7 @@ integer DEBUG = FALSE;
    ═══════════════════════════════════════════════════════════ */
 integer KERNEL_LIFECYCLE = 500;
 integer SETTINGS_BUS = 800;
-integer COMMANDS_BUS = 1000;
+integer UI_BUS = 900;
 
 /* ═══════════════════════════════════════════════════════════
    PLUGIN IDENTITY
@@ -98,7 +98,7 @@ register_commands() {
         "context", PLUGIN_CONTEXT,
         "commands", llList2Json(JSON_ARRAY, REGISTERED_COMMANDS)
     ]);
-    llMessageLinked(LINK_SET, COMMANDS_BUS, msg, NULL_KEY);
+    llMessageLinked(LINK_SET, UI_BUS, msg, NULL_KEY);
     logd("Registered commands: " + llDumpList2String(REGISTERED_COMMANDS, ", "));
 }
 
@@ -108,7 +108,7 @@ unregister_commands() {
         "type", "cmd_unregister",
         "context", PLUGIN_CONTEXT
     ]);
-    llMessageLinked(LINK_SET, COMMANDS_BUS, msg, NULL_KEY);
+    llMessageLinked(LINK_SET, UI_BUS, msg, NULL_KEY);
     logd("Unregistered commands");
 }
 
@@ -274,8 +274,8 @@ default {
             return;
         }
 
-        // ===== COMMAND EXECUTION =====
-        if (num == COMMANDS_BUS) {
+        // ===== COMMAND EXECUTION (via UI_BUS) =====
+        if (num == UI_BUS) {
             if (!json_has(msg, ["type"])) return;
             string msg_type = llJsonGetValue(msg, ["type"]);
 

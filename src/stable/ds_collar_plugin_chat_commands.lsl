@@ -86,10 +86,11 @@ integer is_valid_prefix(string prefix) {
     if (len < 2 || len > 7) return FALSE;
 
     // Check all lowercase letters
-    integer i;
-    for (i = 0; i < len; i++) {
+    integer i = 0;
+    while (i < len) {
         string char = llGetSubString(prefix, i, i);
         if (char < "a" || char > "z") return FALSE;
+        i++;
     }
 
     return TRUE;

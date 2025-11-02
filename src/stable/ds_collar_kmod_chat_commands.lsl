@@ -115,10 +115,11 @@ integer is_valid_prefix(string prefix) {
     if (len < 2 || len > 7) return FALSE;
 
     // Check all lowercase letters
-    integer i;
-    for (i = 0; i < len; i++) {
+    integer i = 0;
+    while (i < len) {
         string char = llGetSubString(prefix, i, i);
         if (char < "a" || char > "z") return FALSE;
+        i++;
     }
 
     return TRUE;
@@ -217,10 +218,10 @@ list RegisteredPlugins = [];
 
 string find_plugin_for_command(string cmd) {
     // Iterate through all registered plugins and check their command arrays
-    integer i;
+    integer i = 0;
     integer len = llGetListLength(RegisteredPlugins);
 
-    for (i = 0; i < len; i++) {
+    while (i < len) {
         string plugin = llList2String(RegisteredPlugins, i);
 
         // Get this plugin's command array from registry
@@ -228,14 +229,16 @@ string find_plugin_for_command(string cmd) {
         if (cmd_array == JSON_INVALID) jump continue_loop;
 
         // Check if cmd is in this array
-        integer j;
-        for (j = 0; j < 100; j++) {  // Max 100 commands per plugin
+        integer j = 0;
+        while (j < 100) {  // Max 100 commands per plugin
             string registered_cmd = llJsonGetValue(cmd_array, [j]);
             if (registered_cmd == JSON_INVALID) jump continue_loop;
             if (registered_cmd == cmd) return plugin;
+            j++;
         }
 
         @continue_loop;
+        i++;
     }
 
     return "";
@@ -243,8 +246,9 @@ string find_plugin_for_command(string cmd) {
 
 register_plugin_commands(string plugin_context, list commands) {
     // Check for collisions
-    integer i;
-    for (i = 0; i < llGetListLength(commands); i++) {
+    integer i = 0;
+    integer cmd_count = llGetListLength(commands);
+    while (i < cmd_count) {
         string cmd = llList2String(commands, i);
         string existing = find_plugin_for_command(cmd);
         if (existing != "" && existing != plugin_context) {
@@ -253,6 +257,7 @@ register_plugin_commands(string plugin_context, list commands) {
             send_error_to_plugin(plugin_context, "Command collision: '" + cmd + "' already registered by " + existing);
             return;
         }
+        i++;
     }
 
     // Add/update plugin's commands in registry
@@ -286,7 +291,7 @@ unregister_plugin_commands(string plugin_context) {
 
 persist_registry() {
     string msg = llList2Json(JSON_OBJECT, [
-        "type", "settings_set",
+        "type", "set",
         "key", KEY_CMD_REGISTRY,
         "value", CommandRegistry
     ]);
@@ -357,22 +362,24 @@ send_help(key speaker) {
     help += "  help - Show this help\n";
 
     // List all registered commands by plugin
-    integer i;
+    integer i = 0;
     integer len = llGetListLength(RegisteredPlugins);
-    for (i = 0; i < len; i++) {
+    while (i < len) {
         string plugin = llList2String(RegisteredPlugins, i);
         string cmd_array = llJsonGetValue(CommandRegistry, [plugin]);
         if (cmd_array == JSON_INVALID) jump continue_help;
 
         // List commands for this plugin
-        integer j;
-        for (j = 0; j < 100; j++) {
+        integer j = 0;
+        while (j < 100) {
             string cmd = llJsonGetValue(cmd_array, [j]);
             if (cmd == JSON_INVALID) jump continue_help;
             help += "  " + cmd + " (" + plugin + ")\n";
+            j++;
         }
 
         @continue_help;
+        i++;
     }
 
     llRegionSayTo(speaker, 0, help);
@@ -450,42 +457,42 @@ persist_state() {
     string msg;
 
     msg = llList2Json(JSON_OBJECT, [
-        "type", "settings_set",
+        "type", "set",
         "key", KEY_CMD_PREFIX,
         "value", CommandPrefix
     ]);
     llMessageLinked(LINK_SET, SETTINGS_BUS, msg, NULL_KEY);
 
     msg = llList2Json(JSON_OBJECT, [
-        "type", "settings_set",
+        "type", "set",
         "key", KEY_CMD_ENABLED,
         "value", (string)ListenerEnabled
     ]);
     llMessageLinked(LINK_SET, SETTINGS_BUS, msg, NULL_KEY);
 
     msg = llList2Json(JSON_OBJECT, [
-        "type", "settings_set",
+        "type", "set",
         "key", KEY_CMD_INITIALIZED,
         "value", (string)Initialized
     ]);
     llMessageLinked(LINK_SET, SETTINGS_BUS, msg, NULL_KEY);
 
     msg = llList2Json(JSON_OBJECT, [
-        "type", "settings_set",
+        "type", "set",
         "key", KEY_CMD_AUTO_MODE,
         "value", (string)AutoMode
     ]);
     llMessageLinked(LINK_SET, SETTINGS_BUS, msg, NULL_KEY);
 
     msg = llList2Json(JSON_OBJECT, [
-        "type", "settings_set",
+        "type", "set",
         "key", KEY_CMD_CH0_ENABLED,
         "value", (string)Ch0Enabled
     ]);
     llMessageLinked(LINK_SET, SETTINGS_BUS, msg, NULL_KEY);
 
     msg = llList2Json(JSON_OBJECT, [
-        "type", "settings_set",
+        "type", "set",
         "key", KEY_CMD_CH1_ENABLED,
         "value", (string)Ch1Enabled
     ]);
@@ -627,11 +634,12 @@ handle_command_messages(string payload, key id) {
 
         // Parse JSON array of commands
         list commands = [];
-        integer i;
-        for (i = 0; i < 100; i++) {  // Max 100 commands per plugin
+        integer i = 0;
+        while (i < 100) {  // Max 100 commands per plugin
             string cmd = llJsonGetValue(commands_json, [i]);
             if (cmd == JSON_INVALID) jump done_parsing;
             commands += [cmd];
+            i++;
         }
         @done_parsing;
 

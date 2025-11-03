@@ -89,7 +89,9 @@ integer is_valid_prefix(string prefix) {
     integer i = 0;
     while (i < len) {
         string char = llGetSubString(prefix, i, i);
-        if (char < "a" || char > "z") return FALSE;
+        integer ord = llOrd(char, 0);
+        // 'a' = 97, 'z' = 122 in ASCII
+        if (ord < 97 || ord > 122) return FALSE;
         i++;
     }
 
@@ -199,16 +201,42 @@ show_menu(string context, string title, string body, list buttons) {
 show_main_menu() {
     string body = "Chat Commands\n\n";
     body += "Prefix: " + CommandPrefix + "\n";
-    body += "Status: " + (ListenerEnabled ? "Active" : "Inactive") + "\n";
-    body += "Ch0: " + (Ch0Enabled ? "ON" : "OFF") + "  ";
-    body += "Ch1: " + (Ch1Enabled ? "ON" : "OFF");
+
+    if (ListenerEnabled) {
+        body += "Status: Active\n";
+    } else {
+        body += "Status: Inactive\n";
+    }
+
+    if (Ch0Enabled) {
+        body += "Ch0: ON  ";
+    } else {
+        body += "Ch0: OFF  ";
+    }
+
+    if (Ch1Enabled) {
+        body += "Ch1: ON";
+    } else {
+        body += "Ch1: OFF";
+    }
 
     // Button layout (bottom-left to top-right):
     // [Chg Pfx][Advanced][       ]
     // [Back   ][Ch0: XX ][Ch1: XX]
 
-    string ch0_label = Ch0Enabled ? "Ch0: ON" : "Ch0: OFF";
-    string ch1_label = Ch1Enabled ? "Ch1: ON" : "Ch1: OFF";
+    string ch0_label;
+    if (Ch0Enabled) {
+        ch0_label = "Ch0: ON";
+    } else {
+        ch0_label = "Ch0: OFF";
+    }
+
+    string ch1_label;
+    if (Ch1Enabled) {
+        ch1_label = "Ch1: ON";
+    } else {
+        ch1_label = "Ch1: OFF";
+    }
 
     list buttons = [
         "Back",
@@ -227,7 +255,13 @@ show_main_menu() {
 
 show_advanced_menu() {
     string body = "Advanced Settings\n\n";
-    body += "Listener: " + (ListenerEnabled ? "ENABLED" : "DISABLED") + "\n\n";
+
+    if (ListenerEnabled) {
+        body += "Listener: ENABLED\n\n";
+    } else {
+        body += "Listener: DISABLED\n\n";
+    }
+
     body += "Warning: Disabling listener\n";
     body += "stops all chat commands.";
 
@@ -236,7 +270,12 @@ show_advanced_menu() {
     // [       ][       ][       ]
     // [Back   ][Toggle ][Reset  ]
 
-    string toggle_label = ListenerEnabled ? "Disable" : "Enable";
+    string toggle_label;
+    if (ListenerEnabled) {
+        toggle_label = "Disable";
+    } else {
+        toggle_label = "Enable";
+    }
 
     list buttons = [
         "Back",
@@ -357,7 +396,12 @@ toggle_channel_0() {
     ]);
     llMessageLinked(LINK_SET, SETTINGS_BUS, msg, NULL_KEY);
 
-    llRegionSayTo(CurrentUser, 0, "Channel 0: " + (Ch0Enabled ? "ON" : "OFF"));
+    if (Ch0Enabled) {
+        llRegionSayTo(CurrentUser, 0, "Channel 0: ON");
+    } else {
+        llRegionSayTo(CurrentUser, 0, "Channel 0: OFF");
+    }
+
     show_main_menu();
 }
 
@@ -371,7 +415,12 @@ toggle_channel_1() {
     ]);
     llMessageLinked(LINK_SET, SETTINGS_BUS, msg, NULL_KEY);
 
-    llRegionSayTo(CurrentUser, 0, "Channel 1: " + (Ch1Enabled ? "ON" : "OFF"));
+    if (Ch1Enabled) {
+        llRegionSayTo(CurrentUser, 0, "Channel 1: ON");
+    } else {
+        llRegionSayTo(CurrentUser, 0, "Channel 1: OFF");
+    }
+
     show_main_menu();
 }
 
@@ -385,7 +434,12 @@ toggle_listener() {
     ]);
     llMessageLinked(LINK_SET, SETTINGS_BUS, msg, NULL_KEY);
 
-    llRegionSayTo(CurrentUser, 0, "Listener: " + (ListenerEnabled ? "ENABLED" : "DISABLED"));
+    if (ListenerEnabled) {
+        llRegionSayTo(CurrentUser, 0, "Listener: ENABLED");
+    } else {
+        llRegionSayTo(CurrentUser, 0, "Listener: DISABLED");
+    }
+
     show_advanced_menu();
 }
 

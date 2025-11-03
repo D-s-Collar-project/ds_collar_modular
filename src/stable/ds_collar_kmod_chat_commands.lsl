@@ -118,7 +118,9 @@ integer is_valid_prefix(string prefix) {
     integer i = 0;
     while (i < len) {
         string char = llGetSubString(prefix, i, i);
-        if (char < "a" || char > "z") return FALSE;
+        integer ord = llOrd(char, 0);
+        // 'a' = 97, 'z' = 122 in ASCII
+        if (ord < 97 || ord > 122) return FALSE;
         i++;
     }
 
@@ -126,13 +128,13 @@ integer is_valid_prefix(string prefix) {
 }
 
 string generate_auto_prefix() {
-    // Get wearer's username (firstname.lastname)
-    string username = llToLower(llGetUsername());
+    // Get wearer's display name
+    string fullname = llKey2Name(llGetOwner());
 
-    // Extract first 2 letters of first name
-    string prefix = llGetSubString(username, 0, 1);
+    // Convert to lowercase and extract first 2 letters
+    string prefix = llToLower(llGetSubString(fullname, 0, 1));
 
-    logd("Auto-generated prefix: " + prefix + " from username: " + username);
+    logd("Auto-generated prefix: " + prefix + " from name: " + fullname);
     return prefix;
 }
 
@@ -254,7 +256,7 @@ register_plugin_commands(string plugin_context, list commands) {
         if (existing != "" && existing != plugin_context) {
             // Collision detected
             logd("COLLISION: " + plugin_context + " tried to register '" + cmd + "' already owned by " + existing);
-            send_error_to_plugin(plugin_context, "Command collision: '" + cmd + "' already registered by " + existing);
+            send_error_to_plugin("Command collision: '" + cmd + "' already registered by " + existing);
             return;
         }
         i++;
@@ -298,7 +300,7 @@ persist_registry() {
     llMessageLinked(LINK_SET, SETTINGS_BUS, msg, NULL_KEY);
 }
 
-send_error_to_plugin(string plugin_context, string error_msg) {
+send_error_to_plugin(string error_msg) {
     string msg = llList2Json(JSON_OBJECT, [
         "type", "cmd_error",
         "error", error_msg
@@ -546,35 +548,35 @@ apply_settings_delta(string payload) {
     if (op == "set") {
         if (!json_has(payload, ["key"]) || !json_has(payload, ["value"])) return;
 
-        string key = llJsonGetValue(payload, ["key"]);
+        string setting_key = llJsonGetValue(payload, ["key"]);
         string value = llJsonGetValue(payload, ["value"]);
 
-        if (key == KEY_CMD_PREFIX) {
+        if (setting_key == KEY_CMD_PREFIX) {
             CommandPrefix = value;
             logd("Prefix changed to: " + CommandPrefix);
         }
-        else if (key == KEY_CMD_ENABLED) {
+        else if (setting_key == KEY_CMD_ENABLED) {
             ListenerEnabled = (integer)value;
             update_listeners();
             logd("Listener enabled: " + value);
         }
-        else if (key == KEY_CMD_INITIALIZED) {
+        else if (setting_key == KEY_CMD_INITIALIZED) {
             Initialized = (integer)value;
         }
-        else if (key == KEY_CMD_AUTO_MODE) {
+        else if (setting_key == KEY_CMD_AUTO_MODE) {
             AutoMode = (integer)value;
         }
-        else if (key == KEY_CMD_CH0_ENABLED) {
+        else if (setting_key == KEY_CMD_CH0_ENABLED) {
             Ch0Enabled = (integer)value;
             update_listeners();
             logd("Ch0 enabled: " + value);
         }
-        else if (key == KEY_CMD_CH1_ENABLED) {
+        else if (setting_key == KEY_CMD_CH1_ENABLED) {
             Ch1Enabled = (integer)value;
             update_listeners();
             logd("Ch1 enabled: " + value);
         }
-        else if (key == KEY_CMD_REGISTRY) {
+        else if (setting_key == KEY_CMD_REGISTRY) {
             CommandRegistry = value;
             logd("Registry updated");
         }
@@ -742,9 +744,6 @@ default {
             if (llGetOwner() != LastOwner) {
                 llResetScript();
             }
-        }
-        else if (change & CHANGED_INVENTORY) {
-            // Notecard might have changed, but we don't use it directly
         }
     }
 }

@@ -262,7 +262,7 @@ TROUBLESHOOTING
 
 PROBLEM: I touch the collar but no menu appears
 - Wait 10 seconds and try again (scripts may still be starting)
-- Make sure you are the wearer or the owner
+- The collar menu only appears for the wearer or the owner
 - Try touching and holding for 1.5 seconds for the emergency menu
 
 PROBLEM: The leash does not make me follow

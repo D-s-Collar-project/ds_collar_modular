@@ -262,8 +262,9 @@ TROUBLESHOOTING
 
 PROBLEM: I touch the collar but no menu appears
 - Wait 10 seconds and try again (scripts may still be starting)
-- The menu appears for: the wearer (unless TPE mode), owner, trustees, or anyone if public mode is on
-- If you are the wearer, try touching and holding for 1.5 seconds for the emergency menu
+- The menu appears for the wearer (unless TPE mode is on), the primary owner, trustees, or anyone not blacklisted if public mode is on
+- If you are the wearer (and you are not in TPE mode), try waiting a few seconds and try again
+- Touch and hold for 1.5 seconds for the emergency menu
 
 PROBLEM: The leash does not make me follow
 - Make sure you have RLV enabled in your viewer
